@@ -14,8 +14,8 @@
 	<script>
 
     // a few constants to configure 
-    const spheresegments = 32;
-    const spheresize = 0.2;
+    const spheresegments = 16;
+    const spheresize = 0.15;
 	
 	var renderer = null, 
 		scene = null, 
@@ -71,7 +71,7 @@
             var sphere = createPhotoSphere(url, spheresize, spheresegments);
 
             // how we determine the location is TBD... for now, just putting it .6 to the right of the last one
-            var newloc = sphereLoc + (i*0.6);
+            var newloc = sphereLoc + (i*0.4);
             sphere.position.set(newloc,0,0);
 
             // Add this sphere to the array
