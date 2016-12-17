@@ -25,7 +25,10 @@
 
     var spheres = new Array();
     var tLoader = new THREE.TextureLoader();
-    
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2(), INTERSECTED = null;
+    var textHint = "none";
+
     // creates a photosphere of the specified size and geometric complexity textured with the specified image
     function createPhotoSphere(imageUrl, size, segments)
     {
@@ -63,14 +66,14 @@
         // drop in our spheres. Loop starts at 1 instead of zero for numbering simplicity since the
         // texture maps are 1-5 
         var sphereLoc = -1.5;
-        for (i = 1; i < 11; i++)
+        for (i = 1; i < 6; i++)
         {
             // url scheme is hard-coded. Using smaller thumbnail images.
             var url = "./images/photospheres/360sample" + i + "_thumb.jpg";
         
             var sphere = createPhotoSphere(url, spheresize, spheresegments);
 
-            // how we determine the location is TBD... for now, just putting it .6 to the right of the last one
+            // how we determine the location is TBD... for now, just putting it at an offset from the last one
             var newloc = sphereLoc + (i*0.4);
             sphere.position.set(newloc,0,0);
 
@@ -80,6 +83,7 @@
             console.log(url);
         }
 
+        document.addEventListener( 'mousemove', onDocumentMouseMove, false);
 
         // Add a mouse up handler to select a sphere
         addMouseHandler();
@@ -100,10 +104,21 @@
                 s.rotation.y -= 0.002;
             });
 		}
-			
+
+        // find intersections
+        // TODO: Need to figure out why i'm off by a few pixels-- likely related to perspectiveamera settings
+        raycaster.setFromCamera( mouse, camera );
+        var intersects = raycaster.intersectObjects(scene.children);
+  
+        for ( var i = 0; i < intersects.length; i++ ) {
+
+            intersects[ i ].object.material.color.set( 0xff0000 );
+
+        }
 		// Ask for another frame
     	requestAnimationFrame(run);	
 	}
+
 	function addMouseHandler()
 	{
 		var dom = renderer.domElement;
@@ -119,6 +134,15 @@
         window.location.assign("viewer.html");
 	}	
 	
+    function onDocumentMouseMove( event ) {
+	// calculate mouse position in normalized device coordinates
+	// (-1 to +1) for both components
+
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    document.getElementById("hint").innerText = textHint;
+	}
+
 	</script>
 
 </head>
@@ -126,6 +150,6 @@
 	<center><h1>Testing textured spheres</h1></center>
     <div id="container" style="width:95%; height:80%; position:absolute; background-color: white;"></div>
 	<div id="prompt" style="width:95%; height:6%; bottom:0; text-align:center; position:absolute;">Click to view the photosphere</div>
-
+	<div id="hint" style="width:95%; height:6%; bottom:1; text-align:center; position:absolute;">foobar</div>
 </body>
 </html>
