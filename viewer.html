@@ -32,7 +32,7 @@
 			drag equirectangular image into the page.
 		</div>
 
-		<script src="three.js"></script>
+		<script src="./libs/three.js"></script>
 
 		<script>
 			var camera, scene, renderer;
@@ -52,7 +52,7 @@
 				var geometry = new THREE.SphereGeometry( 500, 60, 40 );
 				geometry.scale( - 1, 1, 1 );
 				var material = new THREE.MeshBasicMaterial( {
-					map: new THREE.TextureLoader().load( '360sample4.jpg' )
+					map: new THREE.TextureLoader().load( './images/photospheres/360sample4.jpg' )
 				} );
 				mesh = new THREE.Mesh( geometry, material );
 				scene.add( mesh );
