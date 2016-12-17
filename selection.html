@@ -22,10 +22,14 @@
 		camera = null,
 		animating = true;
 
+
+    var spheres = new Array();
+    var tLoader = new THREE.TextureLoader();
+    
     // creates a photosphere of the specified size and geometric complexity textured with the specified image
     function createPhotoSphere(imageUrl, size, segments)
     {
-        var myMap = THREE.ImageUtils.loadTexture(imageUrl);
+        var myMap = tLoader.load(imageUrl);
         var myMat = new THREE.MeshPhongMaterial({map: myMap});
         var myGeometry = new THREE.SphereGeometry(size, segments, segments);
         mySphere = new THREE.Mesh(myGeometry, myMat);
@@ -40,7 +44,7 @@
 	    renderer = new THREE.WebGLRenderer( { antialias: true } );
 	    renderer.setSize(container.offsetWidth, container.offsetHeight);        
 	    container.appendChild( renderer.domElement );
-
+        
 	    // three.js scene
         scene = new THREE.Scene();
 	    
@@ -56,24 +60,26 @@
 		light.position.set(-1, 1, 2);
 		scene.add( light );
 
-        // Put the geometry and material together into a mesh. Note that positions
-        // will be dynamically defined in a future iteration. for now, they are
-        // just being set explicitly. We'll add each mesh to the scene.        
-        sphere1 = createPhotoSphere("360sample1_thumb.jpg", spheresize, spheresegments);
-        sphere1.position.set(-1,0,0);
-        scene.add( sphere1 );
+        // drop in our spheres. Loop starts at 1 instead of zero for numbering simplicity since the
+        // texture maps are 1-5 
+        var sphereLoc = -1;
+        for (i = 1; i < 6; i++)
+        {
+            // url scheme is hard-coded. Using smaller thumbnail images.
+            var url = "./360sample" + i + "_thumb.jpg";
         
-        sphere2 = createPhotoSphere("360sample2_thumb.jpg", spheresize, spheresegments);        sphere2.position.set(-0.5,0,0);
-        scene.add( sphere2 );
+            var sphere = createPhotoSphere(url, spheresize, spheresegments);
 
-        sphere3 = createPhotoSphere("360sample3_thumb.jpg", spheresize, spheresegments);        sphere3.position.set(0,0,0);
-        scene.add( sphere3 );
+            // how we determine the location is TBD... for now, just putting it .6 to the right of the last one
+            var newloc = sphereLoc + (i*0.6);
+            sphere.position.set(newloc,0,0);
 
-        sphere4 = createPhotoSphere("360sample4_thumb.jpg", spheresize, spheresegments);        sphere4.position.set(0.5,0,0);
-        scene.add( sphere4 );
+            // Add this sphere to the array
+            spheres.push(sphere);
+            scene.add(spheres[i-1]);
+            console.log(url);
+        }
 
-        sphere5 = createPhotoSphere("360sample5_thumb.jpg", spheresize, spheresegments);        sphere5.position.set(1,0,0);
-        scene.add( sphere5 );
 
         // Add a mouse up handler to select a sphere
         addMouseHandler();
@@ -89,11 +95,10 @@
 		{
             // for now, all are animating all the time
             // may make it so only mouseover sphere is rotating
-			sphere1.rotation.y -= 0.002;
-            sphere2.rotation.y -= 0.002;
-            sphere3.rotation.y -= 0.002;
-            sphere4.rotation.y -= 0.002;
-            sphere5.rotation.y -= 0.002;
+            spheres.forEach(function(s)
+            {
+                s.rotation.y -= 0.002;
+            });
 		}
 			
 		// Ask for another frame
