@@ -1,0 +1,13 @@
+* {
+    font-family: Arial;
+    font-style: italic;
+}
+
+body {
+	background-color:#FFFFFF;
+	color:#000000;
+}
+
+#container {
+	z-index:-1;
+}

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Selectie bits</title>
+
+	<link rel="stylesheet" href="simple.css" /> 
+	<script src="three.js"></script>
+	<script src="RequestAnimationFrame.js"></script>
+	<script>
+	
+	var renderer = null, 
+		scene = null, 
+		camera = null,
+		cube = null,
+		animating = true;
+
+    var spheresegments = 32,
+        spheresize = 0.2;
+	
+	function onLoad()
+	{
+		// Grab our container div
+        var container = document.getElementById("container");
+        // Create the Three.js renderer, add it to our div
+	    renderer = new THREE.WebGLRenderer( { antialias: true } );
+	    renderer.setSize(container.offsetWidth, container.offsetHeight);
+        
+	    container.appendChild( renderer.domElement );
+	    // Create a new Three.js scene
+	    scene = new THREE.Scene();
+	    
+        scene.background = new THREE.Color( 0xffffff );
+        
+        // Put in a camera
+        camera = new THREE.PerspectiveCamera( 45, container.offsetWidth / container.offsetHeight, 1, 4000 );
+        camera.position.set( 0, 0, 3 );
+        // Create a directional light to show off the object
+		var light = new THREE.DirectionalLight( 0xffffff, 1.5);
+		light.position.set(-1, 1, 2);
+		scene.add( light );
+
+
+
+        // Create a shaded, texture-mapped cube and add it to the scene
+        // First, create the texture map
+        var map1Url = "360sample1_thumb.jpg";
+        var map2Url = "360sample2_thumb.jpg";
+        var map3Url = "360sample3_thumb.jpg";
+        var map4Url = "360sample4_thumb.jpg";
+        var map5Url = "360sample5_thumb.jpg";
+
+        var map1 = THREE.ImageUtils.loadTexture(map1Url);
+        var map2 = THREE.ImageUtils.loadTexture(map2Url);
+        var map3 = THREE.ImageUtils.loadTexture(map3Url);
+        var map4 = THREE.ImageUtils.loadTexture(map4Url);
+        var map5 = THREE.ImageUtils.loadTexture(map5Url);
+
+        // Now, create a Phong material to show shading; pass in the map
+        var material1 = new THREE.MeshPhongMaterial({ map: map1 });
+        var material2 = new THREE.MeshPhongMaterial({ map: map2 });
+        var material3 = new THREE.MeshPhongMaterial({ map: map3 });
+        var material4 = new THREE.MeshPhongMaterial({ map: map4 });
+        var material5 = new THREE.MeshPhongMaterial({ map: map5 });
+
+        // Create the cube geometry
+        var geometry1 = new THREE.SphereGeometry(spheresize, spheresegments, spheresegments);
+        var geometry2 = new THREE.SphereGeometry(spheresize, spheresegments, spheresegments);
+        var geometry3 = new THREE.SphereGeometry(spheresize, spheresegments, spheresegments);
+        var geometry4 = new THREE.SphereGeometry(spheresize, spheresegments, spheresegments);
+        var geometry5 = new THREE.SphereGeometry(spheresize, spheresegments, spheresegments);
+
+
+
+        // And put the geometry and material together into a mesh
+        
+        sphere1 = new THREE.Mesh(geometry1, material1);
+        sphere1.position.set(-1,0,0);
+        
+        sphere2 = new THREE.Mesh(geometry2, material2); 
+        sphere2.position.set(-0.5,0,0);
+
+        sphere3 = new THREE.Mesh(geometry3, material3); 
+        sphere3.position.set(0,0,0);
+
+        sphere4 = new THREE.Mesh(geometry4, material4); 
+        sphere4.position.set(0.5,0,0);
+
+        sphere5 = new THREE.Mesh(geometry5, material5);
+        sphere5.position.set(1,0,0);
+
+
+        // Add the cube to our scene
+        scene.add( sphere1 );
+        scene.add( sphere2 );
+        scene.add( sphere3 );
+        scene.add( sphere4 );
+        scene.add( sphere5 );
+
+        // Add a mouse up handler to toggle the animation
+        addMouseHandler();
+        // Run our render loop
+        run();
+	}
+	function run()
+	{
+		// Render the scene
+		renderer.render( scene, camera );
+		// Spin the cube for next frame
+		if (animating)
+		{
+			sphere1.rotation.y -= 0.002;
+            sphere2.rotation.y -= 0.002;
+            sphere3.rotation.y -= 0.002;
+            sphere4.rotation.y -= 0.002;
+            sphere5.rotation.y -= 0.002;
+		}
+			
+		// Ask for another frame
+    	requestAnimationFrame(run);	
+	}
+	function addMouseHandler()
+	{
+		var dom = renderer.domElement;
+		
+		dom.addEventListener( 'mouseup', onMouseUp, false);
+	}
+	
+	function onMouseUp	(event)
+	{
+	    event.preventDefault();
+	    animating = !animating;
+
+        window.location.assign("viewer.html");
+	}	
+	
+	</script>
+
+</head>
+<body onLoad="onLoad();" style="">
+	<center><h1>Testing textured spheres</h1></center>
+    <div id="container" style="width:95%; height:80%; position:absolute; background-color: white;"></div>
+	<div id="prompt" style="width:95%; height:6%; bottom:0; text-align:center; position:absolute;">Click to view the photosphere</div>
+
+</body>
+</html>
