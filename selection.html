@@ -11,6 +11,8 @@
 	<link rel="stylesheet" href="./css/simple.css" /> 
 	<script src="./libs/three.js"></script>
 	<script src="./libs/RequestAnimationFrame.js"></script>
+    <script src="./sim/sim.js"></script>
+    <script src="./scripts/photosphere.js"></script>
 	<script>
 
     // a few constants to configure 
@@ -26,8 +28,13 @@
     var spheres = new Array();
     var tLoader = new THREE.TextureLoader();
     var raycaster = new THREE.Raycaster();
-    var mouse = new THREE.Vector2(), INTERSECTED = null;
+    var mouse = new THREE.Vector2();
+    var INTERSECTED = null;
+    var selectedColor = new THREE.Color(0xff0000);
+    var unselectedColor = new THREE.Color(0xffffff);
+
     var textHint = "none";
+    var selectedSphere = null;
 
     // creates a photosphere of the specified size and geometric complexity textured with the specified image
     function createPhotoSphere(imageUrl, size, segments)
@@ -48,6 +55,10 @@
 	    renderer.setSize(container.offsetWidth, container.offsetHeight);        
 	    container.appendChild( renderer.domElement );
         
+        // null values causing issues, so setting initial values which will be overwritten on first mouse move.
+        mouse.x = 10;
+        mouse.y = 10;
+
 	    // three.js scene
         scene = new THREE.Scene();
 	    
@@ -65,22 +76,22 @@
 
         // drop in our spheres. Loop starts at 1 instead of zero for numbering simplicity since the
         // texture maps are 1-5 
-        var sphereLoc = -1.5;
-        for (i = 1; i < 6; i++)
+        var sphereLoc = -2.2;
+        for (i = 1; i < 11; i++)
         {
             // url scheme is hard-coded. Using smaller thumbnail images.
-            var url = "./images/photospheres/360sample" + i + "_thumb.jpg";
-        
-            var sphere = createPhotoSphere(url, spheresize, spheresegments);
+            var thumbUrl = "./images/photospheres/360sample" + i + "_thumb.jpg";
+            var imageUrl = "./images/photospheres/360sample" + i;
+
+            var sphere = new PhotoSphere(thumbUrl, imageUrl, spheresize, spheresegments);
 
             // how we determine the location is TBD... for now, just putting it at an offset from the last one
             var newloc = sphereLoc + (i*0.4);
-            sphere.position.set(newloc,0,0);
+            sphere.mesh.position.set(newloc,0,0);
 
             // Add this sphere to the array
             spheres.push(sphere);
-            scene.add(spheres[i-1]);
-            console.log(url);
+            scene.add(spheres[i-1].mesh);
         }
 
         document.addEventListener( 'mousemove', onDocumentMouseMove, false);
@@ -101,20 +112,11 @@
             // may make it so only mouseover sphere is rotating
             spheres.forEach(function(s)
             {
-                s.rotation.y -= 0.002;
+                s.mesh.rotation.y -= 0.002;
             });
 		}
+        findIntersects();
 
-        // find intersections
-        // TODO: Need to figure out why i'm off by a few pixels-- likely related to perspectiveamera settings
-        raycaster.setFromCamera( mouse, camera );
-        var intersects = raycaster.intersectObjects(scene.children);
-  
-        for ( var i = 0; i < intersects.length; i++ ) {
-
-            intersects[ i ].object.material.color.set( 0xff0000 );
-
-        }
 		// Ask for another frame
     	requestAnimationFrame(run);	
 	}
@@ -128,28 +130,68 @@
 	
 	function onMouseUp	(event)
 	{
+        var goUrl = null;
 	    event.preventDefault();
-	    animating = !animating;
+//        console.log(selectedSphere.object.material.map.image.currentSrc);
+        if (selectedSphere != null)
+        {
+            animating = !animating;
 
-        window.location.assign("viewer.html");
+            // determine which sphere. Lame, but I don't know how else to do it.
+            spheres.forEach(function(s)
+            {
+//                console.log(s.mesh.material.map.image.currentSrc);
+//                console.log(selectedSphere);
+
+                if (selectedSphere.object.material.map.image.currentSrc == s.mesh.material.map.image.currentSrc){
+                    goUrl = s.imageUrl;
+                    console.log(s.imageUrl);
+                }
+//                else{ console.log(s.mesh.material.map.image.currentSrc);}
+
+            });
+           //window.location.assign("viewer.html?" + goUrl);
+            document.getElementById('myFrame').src = "./viewer.html?" + goUrl;
+        }
 	}	
 	
     function onDocumentMouseMove( event ) {
 	// calculate mouse position in normalized device coordinates
 	// (-1 to +1) for both components
-
-	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-    document.getElementById("hint").innerText = textHint;
+    event.preventDefault();
+    mouse.x = ( event.clientX / renderer.domElement.width ) * 2 - 1;
+    mouse.y = - ( event.clientY / renderer.domElement.height ) * 2 + 1;
 	}
+
+    function findIntersects(){
+        // find intersections
+        raycaster.setFromCamera( mouse, camera );
+        var intersects = raycaster.intersectObjects( scene.children );
+
+        for ( var i = 0; i < intersects.length; i++ ) {
+            intersects[ i ].object.material.color.set( selectedColor); 
+        }
+
+        if ( intersects.length )
+        {
+            selectedSphere = intersects[0];
+        }
+        else
+        {
+            spheres.forEach(function(s)
+            {
+                s.mesh.material.color.set(unselectedColor);
+            });
+            selectedSphere = null;
+        }
+
+    }
 
 	</script>
 
 </head>
 <body onLoad="onLoad();" style="">
-	<center><h1>Testing textured spheres</h1></center>
-    <div id="container" style="width:95%; height:80%; position:absolute; background-color: white;"></div>
-	<div id="prompt" style="width:95%; height:6%; bottom:0; text-align:center; position:absolute;">Click to view the photosphere</div>
-	<div id="hint" style="width:95%; height:6%; bottom:1; text-align:center; position:absolute;">foobar</div>
+    <div id="container" style="width:95%; height:70%; position:absolute; background-color: white;"></div>
+    <iframe id="myFrame" width="80%" height="50%" style="position: absolute; top: 400px;"></iframe>
 </body>
 </html>

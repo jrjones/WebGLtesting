@@ -51,8 +51,14 @@
 				scene = new THREE.Scene();
 				var geometry = new THREE.SphereGeometry( 500, 60, 40 );
 				geometry.scale( - 1, 1, 1 );
+				var urlstr = "";
+				urlstr = window.location.search.substring(1)+".jpg";
+				if (urlstr == "")
+				{
+					urlstr = "./images/photospheres/360sample1.jpg";
+				}				
 				var material = new THREE.MeshBasicMaterial( {
-					map: new THREE.TextureLoader().load( './images/photospheres/360sample4.jpg' )
+					map: new THREE.TextureLoader().load( urlstr )
 				} );
 				mesh = new THREE.Mesh( geometry, material );
 				scene.add( mesh );
